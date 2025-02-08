@@ -1,1 +1,0 @@
-# SystemInfoScript_Powershell
