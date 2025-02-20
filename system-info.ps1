@@ -1,22 +1,36 @@
+# Define a parameter to accept the directory path
 param (
     [string]$directory
 )
 
-$osVersion = (Get-WmiObject Win32_OperatingSystem).version
-$hostName = $env:COMPUTERNAME
-$ipAddress = (Get-NetIPAddress | Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.PrefixOrigin -eq 'Dhcp' }).IPAddress
+try {
+    # Retrieve the OS version
+    $osVersion = (Get-WmiObject Win32_OperatingSystem).version
 
-$systemInfo = @()
-$systemInfo += "System Information:"
-$systemInfo += "--------------------"
-$systemInfo += "OS Version : $osVersion"
-$systemInfo += "Hostname   : $hostName"
-$systemInfo += "IP Address : $ipAddress"
+    # Retrieve the hostname
+    $hostName = $env:COMPUTERNAME
 
-# Ensure the directory exists
-if (-not (Test-Path -Path $directory)) {
-    New-Item -ItemType Directory -Path $directory
+    # Retrieve the IP address
+    $ipAddress = (Get-NetIPAddress | Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.PrefixOrigin -eq 'Dhcp' }).IPAddress
+
+    # Initialize an array to store system information
+    $systemInfo = @()
+    $systemInfo += "System Information:"
+    $systemInfo += "--------------------"
+    $systemInfo += "OS Version : $osVersion"
+    $systemInfo += "Hostname   : $hostName"
+    $systemInfo += "IP Address : $ipAddress"
+
+    # Ensure the directory exists; if not, create it
+    if (-not (Test-Path -Path $directory)) {
+        New-Item -ItemType Directory -Path $directory
+    }
+
+    # Write the system information to a file
+    $systemInfo | Out-File -FilePath "$directory\systemInfo.txt"
+
+    Write-Output "System information successfully written to $directory\systemInfo.txt"
+} catch {
+    # Log any errors that occur during script execution
+    Write-Error "An error occurred: $_"
 }
-
-# Write the information to a file
-$systemInfo | Out-File -FilePath "$directory\systemInfo.txt"
