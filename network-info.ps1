@@ -1,20 +1,33 @@
+param (
+    [string]$directory
+)
+
 $netAdapters = Get-NetAdapter | Select-Object Name, Status, MacAddress
 $dnsInfo = Get-DnsClientServerAddress | Select-Object InterfaceAlias, ServerAddresses
 
-Write-Output "Network Adapter Information"
-Write-Output "----------------------------"
+$networkInfo = @()
+$networkInfo += "Network Adapter Information"
+$networkInfo += "----------------------------"
 foreach ($adapter in $netAdapters) {
-    Write-Output "Adapter Name    : $($adapter.Name)"
-    Write-Output "Adapter Status  : $($adapter.Status)"
-    Write-Output "MAC Address     : $($adapter.MacAddress)"
-    Write-Output "-----------------------------------"
+    $networkInfo += "Adapter Name    : $($adapter.Name)"
+    $networkInfo += "Adapter Status  : $($adapter.Status)"
+    $networkInfo += "MAC Address     : $($adapter.MacAddress)"
+    $networkInfo += "-----------------------------------"
 }
 
-Write-Output ""
-Write-Output "DNS Server Information"
-Write-Output "-----------------------"
+$networkInfo += ""
+$networkInfo += "DNS Server Information"
+$networkInfo += "-----------------------"
 foreach ($dns in $dnsInfo) {
-    Write-Output "Interface Alias : $($dns.InterfaceAlias)"
-    Write-Output "Server Addresses: $($dns.ServerAddresses -join ', ')"
-    Write-Output "-----------------------------------"
+    $networkInfo += "Interface Alias : $($dns.InterfaceAlias)"
+    $networkInfo += "Server Addresses: $($dns.ServerAddresses -join ', ')"
+    $networkInfo += "-----------------------------------"
 }
+
+# Ensure the directory exists
+if (-not (Test-Path -Path $directory)) {
+    New-Item -ItemType Directory -Path $directory
+}
+
+# Write the information to a file
+$networkInfo | Out-File -FilePath "$directory\networkInfo.txt"
